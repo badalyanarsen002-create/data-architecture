@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data Architecture Pipeline</title>
+<style>
+:root{
+  --bg:#fdfcfc;--surface:#f2f0f0;--surface2:#fff;--text:#111;--muted:rgba(0,0,0,.55);
+  --line:#d7d8da;--primary:#3186ff;--accent:#dcf1ff;--accent2:#9dd2ff;
+  --shadow:0 10px 30px rgba(0,0,0,.06);
+  --radius:16px;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  --sans:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+html[data-theme="dark"]{
+  --bg:#0f0f0f;--surface:#141414;--surface2:#1c1c1c;--text:#e8e8e8;--muted:rgba(255,255,255,.55);
+  --line:#303238;--primary:#9dd2ff;--accent:#192967;--accent2:#1f3b9b;--shadow:0 12px 35px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit}
+.widget{width:min(100%,760px);margin:auto;padding:18px 14px 20px;display:flex;flex-direction:column;gap:12px}
+.header{display:flex;flex-direction:column;gap:4px}
+.header h1{font-size:22px;line-height:28px;font-weight:600;margin:0;letter-spacing:-.02em}
+.header p{font-size:13px;line-height:18px;color:var(--muted);margin:0}
+.viewport{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 7px;display:flex;justify-content:center;overflow:hidden}
+svg{width:100%;max-width:700px;height:auto;display:block}
+.stage{cursor:pointer}
+.stage .node{transition:fill .18s,stroke .18s,stroke-width .18s}
+.stage:hover .node{fill:var(--surface2)}
+.stage.active .node{fill:var(--accent);stroke:var(--primary);stroke-width:2}
+svg text{pointer-events:none}
+.flow{fill:none;stroke:var(--line);stroke-width:1.5;stroke-linecap:round}
+.stream{fill:none;stroke:var(--primary);stroke-width:2;stroke-linecap:round;stroke-dasharray:6 12;animation:flow 1.2s linear infinite}
+.stream.paused{animation-play-state:paused;opacity:.28}
+@keyframes flow{from{stroke-dashoffset:36}to{stroke-dashoffset:0}}
+.details{background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.detail-head{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.title-group{display:flex;flex-direction:column;gap:2px}
+.detail-title{font-size:15px;font-weight:600}
+.detail-sub{font-size:12px;color:var(--muted)}
+.badge{font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:999px;background:var(--accent);color:var(--primary);white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-height:70px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.card strong{font-size:13px;line-height:17px}
+.card span{font-family:var(--mono);font-size:11px;color:var(--primary);line-height:15px}
+.controls{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.control{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.switch{position:relative;width:40px;height:24px;display:inline-block}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;border-radius:999px;background:#bbb;transition:.2s;cursor:pointer}
+.slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked + .slider{background:var(--primary)}
+input:checked + .slider:before{transform:translateX(16px)}
+.theme{border:1px solid var(--line);background:var(--surface2);color:var(--text);border-radius:999px;padding:7px 11px;cursor:pointer;font-size:12px}
+@media(max-width:480px){.cards{grid-template-columns:1fr}.widget{padding-inline:10px}.controls{align-items:flex-start;flex-direction:column}.badge{font-size:10px}}
+</style>
+</head>
+<body>
+<div class="widget">
+  <header class="header">
+    <h1>Data Architecture Pipeline</h1>
+    <p>5-stage end-to-end data processing workflow</p>
+  </header>
+
+  <div class="viewport">
+    <svg viewBox="0 0 640 470" preserveAspectRatio="xMidYMid meet" aria-label="Interactive data architecture pipeline">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="7.5" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+          <path d="M3 1.2L7.5 5 3 8.8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </marker>
+      </defs>
+
+      <g class="flow-layer" color="var(--text)">
+        <path class="flow" d="M320 68V96" marker-end="url(#arrow)"/>
+        <path class="stream" id="stream1" d="M320 68V96"/>
+        <path class="flow" d="M320 152V180" marker-end="url(#arrow)"/>
+        <path class="stream" id="stream2" d="M320 152V180"/>
+        <path class="flow" d="M320 236V264" marker-end="url(#arrow)"/>
+        <path class="stream" id="stream3" d="M320 236V264"/>
+        <path class="flow" d="M320 320V348" marker-end="url(#arrow)"/>
+        <path class="stream" id="stream4" d="M320 320V348"/>
+      </g>
+
+      <g class="stage active" id="stage0" onclick="selectStage(0)">
+        <rect class="node" x="60" y="16" width="520" height="52" rx="12" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="80" y="37" font-size="14" font-weight="600" fill="var(--text)">1. Data Sources</text>
+        <text x="80" y="53" font-size="11" fill="var(--muted)">CRM · Betting History · Transactions · Session Logs · External Odds &amp; Calendars</text>
+        <rect x="452" y="30" width="100" height="24" rx="12" fill="var(--surface)"/>
+        <text x="502" y="46" text-anchor="middle" font-family="monospace" font-size="11" fill="var(--muted)">INGRESS</text>
+      </g>
+
+      <g class="stage" id="stage1" onclick="selectStage(1)">
+        <rect class="node" x="60" y="100" width="520" height="52" rx="12" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="80" y="121" font-size="14" font-weight="600" fill="var(--text)">2. Data Collection &amp; Storage</text>
+        <text x="80" y="137" font-size="11" fill="var(--muted)">Data Warehouse / Centralized Database</text>
+        <rect x="452" y="114" width="100" height="24" rx="12" fill="var(--surface)"/>
+        <text x="502" y="130" text-anchor="middle" font-family="monospace" font-size="11" fill="var(--muted)">STORAGE</text>
+      </g>
+
+      <g class="stage" id="stage2" onclick="selectStage(2)">
+        <rect class="node" x="60" y="184" width="520" height="52" rx="12" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="80" y="205" font-size="14" font-weight="600" fill="var(--text)">3. Data Cleaning &amp; Processing</text>
+        <text x="80" y="221" font-size="11" fill="var(--muted)">ETL Pipelines · Deduplication · Data Formatting · Real-time Processing</text>
+        <rect x="452" y="198" width="100" height="24" rx="12" fill="var(--surface)"/>
+        <text x="502" y="214" text-anchor="middle" font-family="monospace" font-size="11" fill="var(--muted)">ETL</text>
+      </g>
+
+      <g class="stage" id="stage3" onclick="selectStage(3)">
+        <rect class="node" x="60" y="268" width="520" height="52" rx="12" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="80" y="289" font-size="14" font-weight="600" fill="var(--text)">4. Analysis &amp; Modeling</text>
+        <text x="80" y="305" font-size="11" fill="var(--muted)">Predictive Analytics · Churn Prediction · Risk Detection Models</text>
+        <rect x="452" y="282" width="100" height="24" rx="12" fill="var(--surface)"/>
+        <text x="502" y="298" text-anchor="middle" font-family="monospace" font-size="11" fill="var(--muted)">MODELS</text>
+      </g>
+
+      <g class="stage" id="stage4" onclick="selectStage(4)">
+        <rect class="node" x="60" y="352" width="520" height="52" rx="12" fill="var(--surface)" stroke="var(--line)"/>
+        <text x="80" y="373" font-size="14" font-weight="600" fill="var(--text)">5. Insights &amp; Decision-Making</text>
+        <text x="80" y="389" font-size="11" fill="var(--muted)">Dashboards · Alerts · Responsible Gambling · Re-engagement</text>
+        <rect x="452" y="366" width="100" height="24" rx="12" fill="var(--surface)"/>
+        <text x="502" y="382" text-anchor="middle" font-family="monospace" font-size="11" fill="var(--muted)">ACTIONS</text>
+      </g>
+
+      <path d="M100 426H540" stroke="var(--line)" stroke-width="1" stroke-dasharray="2 4"/>
+      <text x="320" y="444" text-anchor="middle" font-family="monospace" font-size="11" fill="var(--muted)">DATA FLOW → INSIGHTS → DECISIONS</text>
+    </svg>
+  </div>
+
+  <section class="details">
+    <div class="detail-head">
+      <div class="title-group">
+        <span class="detail-title" id="detailTitle">1. Data Sources</span>
+        <span class="detail-sub" id="detailSub">Source systems feeding the pipeline</span>
+      </div>
+      <span class="badge" id="badge">Stage 1 of 5</span>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <div class="controls">
+    <div class="control">
+      <label class="switch">
+        <input id="animate" type="checkbox" checked onchange="toggleAnimation(this.checked)">
+        <span class="slider"></span>
+      </label>
+      <span>Animate Data Flow Stream</span>
+    </div>
+    <button class="theme" onclick="toggleTheme()" id="themeBtn">Dark mode</button>
+  </div>
+</div>
+
+<script>
+const DATA=[
+ {title:"1. Data Sources",sub:"Source systems feeding the pipeline",items:[
+  ["CRM","Customer relationship data"],
+  ["Betting History","Historical betting activity"],
+  ["Transactions","Financial transaction data"],
+  ["Session Logs","User session and activity logs"],
+  ["External Odds & Calendars","External odds and calendar data"]
+ ]},
+ {title:"2. Data Collection & Storage",sub:"Centralized data foundation",items:[
+  ["Data Warehouse","Centralized analytical data repository"],
+  ["Centralized Database","Unified storage layer"]
+ ]},
+ {title:"3. Data Cleaning & Processing",sub:"Preparing reliable, consistent data",items:[
+  ["ETL Pipelines","Extract, transform and load"],
+  ["Deduplication","Remove duplicate records"],
+  ["Data Formatting","Standardize data structures and formats"],
+  ["Real-time Processing","Process incoming events continuously"]
+ ]},
+ {title:"4. Analysis & Modeling",sub:"Turning processed data into predictions",items:[
+  ["Predictive Analytics","Generate forward-looking insights"],
+  ["Churn Prediction","Identify customers at risk of leaving"],
+  ["Risk Detection Models","Detect behavioral and operational risk signals"]
+ ]},
+ {title:"5. Insights & Decision-Making",sub:"Turning insights into action",items:[
+  ["Dashboards","Monitor KPIs and business performance"],
+  ["Automated Alerts","Surface important events automatically"],
+  ["Responsible Gambling Interventions","Support safer gambling decisions"],
+  ["Re-engagement Offers","Support targeted customer re-engagement"]
+ ]}
+];
+
+function selectStage(i){
+ document.querySelectorAll(".stage").forEach((el,n)=>el.classList.toggle("active",n===i));
+ const d=DATA[i];
+ document.getElementById("detailTitle").textContent=d.title;
+ document.getElementById("detailSub").textContent=d.sub;
+ document.getElementById("badge").textContent=`Stage ${i+1} of 5`;
+ document.getElementById("cards").innerHTML=d.items.map(x=>`<div class="card"><strong>${x[0]}</strong><span>${x[1]}</span></div>`).join("");
+}
+function toggleAnimation(on){
+ document.querySelectorAll(".stream").forEach(x=>x.classList.toggle("paused",!on));
+}
+function toggleTheme(){
+ const dark=document.documentElement.getAttribute("data-theme")==="dark";
+ document.documentElement.setAttribute("data-theme",dark?"light":"dark");
+ document.getElementById("themeBtn").textContent=dark?"Dark mode":"Light mode";
+}
+if(matchMedia("(prefers-color-scheme: dark)").matches){
+ document.documentElement.setAttribute("data-theme","dark");
+ document.getElementById("themeBtn").textContent="Light mode";
+}
+selectStage(0);
+</script>
+</body>
+</html>
